@@ -19,7 +19,14 @@ jobs:
           gradle-version: 8.7
       - run: gradle assembleDebug --no-daemon
         working-directory: proj
-      - name: Leer version
-        id: ver
-        run: echo "v=$(grep -oP 'versionName = "\K[^"]+' proj/app/build.gradle.kts)" >> "$GITHUB_OUTPUT"
-      - name: Ren
+      - name: Preparar APK
+        run: |
+          V=$(grep -oP 'versionName = "\K[^"]+' proj/app/build.gradle.kts)
+          echo "VERSION=$V" >> "$GITHUB_ENV"
+          cp proj/app/build/outputs/apk/debug/app-debug.apk "NovelaMaker-$V.apk"
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ env.VERSION }}
+          name: Novela Maker ${{ env.VERSION }}
+          body_path: proj/RELEASE_NOTES.md
+          files: NovelaMaker-${{ env.VERSION }}.apk
